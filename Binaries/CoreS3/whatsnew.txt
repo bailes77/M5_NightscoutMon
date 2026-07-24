@@ -1,1 +1,1 @@
-Added LibreLinkUp ("LibreView") follower accounts as a glucose data source - see the new "Data source" section in the web config page.
+Fixed LibreLinkUp constantly reporting "No current reading" / "JSON parse failed": the glucose graph download was corrupted by chunked HTTP responses. Also fixed accounts with a pending LibreLinkUp terms-of-use acceptance being wrongly reported as wrong username/password.

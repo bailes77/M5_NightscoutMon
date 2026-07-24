@@ -3,6 +3,12 @@
 ## Revisions
 
 
+### 23 July 2026 (LibreLinkUp graph fetch fix)
+
+* Fixed the LibreLinkUp data source failing nearly every poll on real hardware with alternating "No current reading" / "JSON parse failed" errors. The graph response was parsed straight off `http.getStream()`, but the ESP32 `HTTPClient` does not decode `Transfer-Encoding: chunked` on the raw stream (only `getString()` does), so the interleaved chunk-size lines corrupted the JSON. The graph request is now made as HTTP/1.0, which forbids chunked responses (the standard ArduinoJson recommendation for streamed parsing). Found by comparing against xDrip's web-follower transport, which decodes chunking transparently via OkHttp.
+* Fixed a login-flow ordering bug: any nonzero login `status` was treated as bad credentials (with permanent backoff) before the terms-of-use step was examined, making the ToU auto-accept unreachable - LibreLinkUp reports a pending ToU as `status` 4. The redirect and ToU steps are now handled before the status check.
+* JSON parse failures from LibreLinkUp now log the ArduinoJson error reason (`NoMemory`, `InvalidInput`, ...) to serial for easier field diagnosis, and requests carry `cache-control: no-cache` matching other LibreLinkUp clients.
+
 ### 18 July 2026 (LibreLinkUp data source)
 
 * Added LibreLinkUp ("LibreView") follower accounts as the third glucose data source (`data_source = 2`), filling in the slot the Dexcom Share integration reserved. New config: `libre_user`, `libre_pass`, `libre_server` (region index, default 5 = EU), settable via `M5NS.INI`, NVS flash, or the web config UI's "Data source" section (region dropdown covers all 12 LibreLinkUp regions). Fetch logic lives in the new `M5NSLibre.cpp`/`.h`: logs in via `/llu/auth/login`, follows a region "redirect" response automatically (persisting the corrected region), resolves the first followed patient via `/llu/connections`, then reads `/llu/connections/{id}/graph` for the current reading plus recent history. The graph response is parsed with an ArduinoJson streaming filter (only the fields actually used) into a local document, since the unfiltered payload is too large for the shared 16 KB `JSONdoc`. Reuses the existing `directionToArrowAngle()` trend mapping and the Dexcom-style bad-credential backoff.
