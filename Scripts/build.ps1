@@ -35,7 +35,7 @@
 
 [CmdletBinding()]
 param(
-    [ValidateSet('Basic4MB', 'ESP32_16MB', 'CoreS3', 'All')]
+    [ValidateSet('Basic4MB', 'ESP32_16MB', 'CoreS3', 'JC3248W535', 'All')]
     [string]$Target,
 
     [string]$ArduinoCli,
@@ -73,6 +73,10 @@ $Targets = [ordered]@{
     'Basic4MB'   = @{ Fqbn = 'esp32:esp32:m5stack-core-esp32:PartitionScheme=min_spiffs';           Folder = 'Basic_4MB';   Desc = 'old Basic <=2020.5' }
     'ESP32_16MB' = @{ Fqbn = 'esp32:esp32:m5stack-fire:PartitionScheme=default,PSRAM=disabled';      Folder = 'ESP32_16MB';  Desc = 'Basic 16MB, Fire, all Core2' }
     'CoreS3'     = @{ Fqbn = 'esp32:esp32:m5stack-cores3:PartitionScheme=default_16MB';              Folder = 'CoreS3';      Desc = 'all CoreS3 (ESP32-S3)' }
+    # Non-M5 board: generic S3 FQBN + the DEVICE define that swaps M5Unified for the
+    # hal_jc3248w535 shim. Requires the Arduino_GFX library ("GFX Library for Arduino",
+    # pin 1.6.0). SkipInAll keeps it out of release ('All') builds until HW-validated.
+    'JC3248W535' = @{ Fqbn = 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,FlashMode=dio,CDCOnBoot=cdc'; Folder = 'JC3248W535'; Desc = 'Guition JC3248W535 3.5in (ESP32-S3)'; Extra = '-DDEVICE_JC3248W535'; SkipInAll = $true }
 }
 
 # Common flag: matches the PlatformIO fix for the missing gpio_deep_sleep_hold_dis
@@ -109,7 +113,8 @@ if (-not $Target) {
 }
 
 # --- Resolve selection to a list of target names ------------------------------
-$toBuild = if ($Target -eq 'All') { @($Targets.Keys) } else { @($Target) }
+# 'All' = the release set; targets marked SkipInAll build only when named explicitly.
+$toBuild = if ($Target -eq 'All') { @($Targets.Keys | Where-Object { -not $Targets[$_].SkipInAll }) } else { @($Target) }
 
 # --- Auto-bump version on release ('All') builds ------------------------------
 # A full build of all three targets is treated as a release: bump the same-day
@@ -167,9 +172,12 @@ foreach ($name in $toBuild) {
     }
     New-Item -ItemType Directory -Force -Path $buildPath | Out-Null
 
+    $targetFlags = $ExtraFlags
+    if ($t.Extra) { $targetFlags += ' ' + $t.Extra }
+
     & $ArduinoCli compile `
         --fqbn $t.Fqbn `
-        --build-property $ExtraFlags `
+        --build-property $targetFlags `
         --build-path $buildPath `
         --output-dir $outDir `
         $Sketch

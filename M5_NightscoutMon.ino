@@ -33,8 +33,7 @@
 // M5Stack Arduino / M5Stack-Core2
 
 #include <Arduino.h>
-#include <SD.h>          // must precede M5Unified.h so M5GFX enables its fs::FS (SD) image overloads
-#include <M5Unified.h>
+#include "M5NSDevice.h"  // SD.h + M5Unified, or the JC3248W535 shim (build with -DDEVICE_JC3248W535)
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
@@ -2323,7 +2322,7 @@ void setup() {
     // prevent button A "ghost" random presses on older versions
     Wire.begin();
     
-    SD.begin();
+    halSDBegin();
     // M5.Speaker.mute();
 
     // Lcd display

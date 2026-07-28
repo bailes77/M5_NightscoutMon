@@ -1,5 +1,4 @@
-#include <SD.h>          // must precede M5Unified.h so M5GFX enables its fs::FS (SD) image overloads
-#include <M5Unified.h>
+#include "M5NSDevice.h"  // SD.h + M5Unified, or the JC3248W535 shim (build with -DDEVICE_JC3248W535)
 
 #include <Preferences.h>
 #include <WiFi.h>
@@ -27,7 +26,11 @@
 // 16MB, Fire and all Core2), and CoreS3 (ESP32-S3). Selection is by chip + flash size,
 // not board model, since a "basic-looking" board can have either partition layout.
 static const char* updateVariantPath() {
-#if CONFIG_IDF_TARGET_ESP32S3
+#if defined(DEVICE_JC3248W535)
+  // Must come before the generic S3 branch: a JC board pulling the CoreS3 image
+  // would flash firmware for the wrong panel/pins.
+  return "JC3248W535";
+#elif CONFIG_IDF_TARGET_ESP32S3
   return "CoreS3";
 #else
   return (ESP.getFlashChipSize() >= 16 * 1024 * 1024) ? "ESP32_16MB" : "Basic_4MB";

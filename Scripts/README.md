@@ -30,6 +30,12 @@ so different targets can build concurrently without corrupting each other's obje
 | `Binaries\Basic_4MB`  | `m5stack-core-esp32` · `min_spiffs`                           | **only** the old Basic (≤2020.5, 4 MB)    |
 | `Binaries\ESP32_16MB` | `m5stack-fire` · `default` (16 MB) · **PSRAM off**            | Basic 16 MB/v2.7, Fire, **all** Core2     |
 | `Binaries\CoreS3`     | `m5stack-cores3` · `default_16MB`                            | **all** CoreS3 (K128 / Lite / SE / K149)  |
+| `Binaries\JC3248W535` | `esp32s3` · `app3M_fat9M_16MB` · PSRAM opi · flash dio · `-DDEVICE_JC3248W535` | Guition JC3248W535 3.5" only (non-M5 board) |
+
+**JC3248W535 is not part of `-Target All`** (release) builds yet — build it explicitly with
+`-Target JC3248W535` until it's hardware-validated. It additionally requires the
+**"GFX Library for Arduino" (Arduino_GFX) 1.6.0** library (1.6.1 is reported broken with
+its AXS15231B panel): `arduino-cli lib install "GFX Library for Arduino@1.6.0"`.
 
 Core2 and CoreS3 sub-variants (AXP192 vs AXP2101 PMU, BMI270 vs MPU6886 IMU, RTC, touch) are all
 detected at runtime by M5Unified — they need no separate binary.
@@ -78,7 +84,7 @@ esptool --chip esp32 -p COM5 write_flash `
   0x10000 M5_NightscoutMon.ino.bin
 ```
 
-CoreS3 (`CoreS3`, ESP32-S3) — bootloader at **0x0**:
+ESP32-S3 boards (`CoreS3`, `JC3248W535`) — bootloader at **0x0**:
 ```
 esptool --chip esp32s3 -p COM5 write_flash `
   0x0     M5_NightscoutMon.ino.bootloader.bin `

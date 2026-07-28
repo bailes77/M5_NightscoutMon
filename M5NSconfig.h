@@ -1,7 +1,7 @@
 #ifndef _M5NSCONFIG_H
 #define _M5NSCONFIG_H
 
-#include <M5Unified.h>
+#include "M5NSDevice.h"
 
 #include "IniFile.h"
 

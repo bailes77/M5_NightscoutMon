@@ -3,6 +3,13 @@
 ## Revisions
 
 
+### 28 July 2026 (Guition JC3248W535 port - branch JC3248W535)
+
+* First non-M5Stack target: the Guition JC3248W535 (ESP32-S3, 3.5" 320x480 IPS, AXS15231B panel+touch on QSPI/I2C, microSD, NS4168 I2S speaker, no physical buttons). Built with `Scripts\build.ps1 -Target JC3248W535` into `Binaries\JC3248W535\`; intentionally excluded from release (`-Target All`) builds until hardware-validated. Requires the "GFX Library for Arduino" (Arduino_GFX) **1.6.0** (1.6.1 is reported broken with this panel).
+* The port is a device shim, not a UI rewrite: `M5NSDevice.h` selects between M5Unified (all M5 boards, unchanged) and `hal_jc3248w535.h/.cpp`, which provides the same `M5` object surface. The unchanged 320x240 UI draws into an offscreen M5GFX sprite; a background task composes it rotated + exactly 1.5x into a full 320x480 frame and pushes it whole - full-frame-only is mandatory on this panel anyway (no hardware rotation, and some silicon batches ignore window-address commands, breaking partial updates). Arduino_GFX drives only panel init + frame push.
+* Touch from the AXS15231B is mapped back into UI coordinates; the bottom-of-screen thirds act as BtnA/B/C exactly like M5Unified's touch zones on Core2/CoreS3. Alarms play as synthesized I2S tones on the NS4168. No fuel gauge: the battery icon stays hidden; long-press power-off becomes deep sleep (reset button restarts). SD runs on its own SPI3/HSPI bus (the display owns SPI2), so `M5NS.INI`, boot picture and logfile work as usual; without a card the existing NVS fallback applies.
+* Fixed a pre-existing OTA footgun while at it: firmware variant selection treated *every* ESP32-S3 build as CoreS3 - a JC3248W535 device would have OTA-flashed the CoreS3 image (wrong panel/pins). The JC variant now resolves first.
+
 ### 23 July 2026 (LibreLinkUp graph fetch fix)
 
 * Fixed the LibreLinkUp data source failing nearly every poll on real hardware with alternating "No current reading" / "JSON parse failed" errors. The graph response was parsed straight off `http.getStream()`, but the ESP32 `HTTPClient` does not decode `Transfer-Encoding: chunked` on the raw stream (only `getString()` does), so the interleaved chunk-size lines corrupted the JSON. The graph request is now made as HTTP/1.0, which forbids chunked responses (the standard ArduinoJson recommendation for streamed parsing). Found by comparing against xDrip's web-follower transport, which decodes chunking transparently via OkHttp.
