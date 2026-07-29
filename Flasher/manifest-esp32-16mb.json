@@ -1,0 +1,16 @@
+{
+  "name": "M5_NightscoutMon — M5Stack 16MB ESP32 (Basic 16MB/v2.7, Fire, Core2)",
+  "version": "see update.inf",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 0,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "../Binaries/ESP32_16MB/M5_NightscoutMon.ino.bootloader.bin", "offset": 4096 },
+        { "path": "../Binaries/ESP32_16MB/M5_NightscoutMon.ino.partitions.bin", "offset": 32768 },
+        { "path": "../Binaries/ESP32_16MB/M5_NightscoutMon.ino.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "name": "M5_NightscoutMon — M5Stack CoreS3",
+  "version": "see update.inf",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 0,
+  "builds": [
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "../Binaries/CoreS3/M5_NightscoutMon.ino.bootloader.bin", "offset": 0 },
+        { "path": "../Binaries/CoreS3/M5_NightscoutMon.ino.partitions.bin", "offset": 32768 },
+        { "path": "../Binaries/CoreS3/M5_NightscoutMon.ino.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

@@ -95,6 +95,20 @@ esptool --chip esp32s3 -p COM5 write_flash `
 After the first full flash, subsequent updates can go over-the-air (OTA) — all three schemes keep
 two app slots.
 
+**Browser — the `Flasher\` page (end users):**
+
+`Flasher\index.html` is an [ESP Web Tools](https://esphome.github.io/esp-web-tools/) page: one
+Install button per firmware group, flashing over Web Serial from Chrome/Edge — no software or
+driver knowledge needed. Each group has a static `Flasher\manifest-*.json` with the bins and
+offsets; the page reads `Binaries\<group>\update.inf` at load time to display and stamp the
+current version, so publishing an OTA update automatically updates the flasher too — the
+manifests never need editing.
+
+It must be served over HTTPS from the same origin as `Binaries\`: enable GitHub Pages
+(Settings → Pages → Deploy from a branch → `master`, `/ (root)`) and the page is at
+`https://<user>.github.io/M5_NightscoutMon/Flasher/`. It cannot run from `file://` (fetch of the
+manifests fails); for local testing use `python -m http.server` from the repo root.
+
 ## Publishing an OTA update
 
 The device pulls OTA firmware straight from this GitHub repo (`raw.githubusercontent.com`,
