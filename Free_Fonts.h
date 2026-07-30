@@ -1,3 +1,7 @@
+// Free_Fonts.h - GFX Free Font aliases, from the examples of Bodmer's TFT_eSPI
+// library (https://github.com/Bodmer/TFT_eSPI, FreeBSD license). The font data
+// itself ships with M5GFX (Adafruit GFX FreeFonts).
+//
 // Attach this header file to your sketch to use the GFX Free Fonts. You can write
 // sketches without it, but it makes referencing them easier.
 

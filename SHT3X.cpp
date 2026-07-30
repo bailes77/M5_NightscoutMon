@@ -1,8 +1,9 @@
-#include "SHT3X.h"
-
-/* Motor()
-
+/*
+  SHT3X temperature/humidity sensor driver.
+  From M5Stack's ENV unit example code (https://github.com/m5stack),
+  MIT License, Copyright (c) M5Stack.
 */
+#include "SHT3X.h"
 SHT3X::SHT3X(uint8_t address)
 {
   Wire.begin();

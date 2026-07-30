@@ -1,6 +1,9 @@
 /*  M5Stack Nightscout monitor
-    Copyright (C) 2018-2021 Martin Lukasek <martin@lukasek.cz>
-    
+    Copyright (C) 2018-2023 Martin Lukasek <martin@lukasek.cz>
+    Copyright (C) 2021-2026 Patrick Sonnerat and contributors
+
+    SPDX-License-Identifier: GPL-3.0-or-later
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -12,17 +15,31 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>. 
-    
-    This software uses some 3rd party libraries:
-    IniFile by Steve Marple <stevemarple@googlemail.com> (GNU LGPL v2.1)
-    ArduinoJson by Benoit BLANCHON (MIT License) 
-    IoT Icon Set by Artur Funk (GPL v3)
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+    This software includes or adapts 3rd party code (in this repository):
+    IniFile by Steve Marple <stevemarple@googlemail.com> (GNU LGPL v2.1, modified)
+    IoT Icon Set by Artur Funk (GPL v3) - iot_iconset_16x16.c
     DHT12 by Bobadas (Public domain)
+    SHT3X class from M5Stack's ENV unit examples (MIT) - SHT3X.cpp/h
+    Free_Fonts.h font aliases from Bodmer's TFT_eSPI examples (FreeBSD license)
+    Dexcom Share and LibreLinkUp follower protocols adapted from
+      ktomy/nightscout-clock, BGSourceDexcom/BGSourceLibreLinkUp (GNU LGPL v2.1)
+      - M5NSDexcom.cpp/h, M5NSLibre.cpp/h
+    Library dependencies (installed separately, not part of this repository):
+    M5Unified and M5GFX by M5Stack (MIT)
+    ArduinoJson by Benoit Blanchon (MIT)
+    Adafruit NeoPixel (GNU LGPL v3)
+    Arduino_GFX by moononournation (BSD 2-Clause) - JC3248W535 build only
+    The web flasher page (Flasher/) uses ESP Web Tools by ESPHome/Open Home
+      Foundation (Apache 2.0), loaded from unpkg at run time.
     Additions to the code:
     Peter Leimbach (Nightscout token)
     Sulka Haro (Nightscout API queries help)
     Ben West (AP WiFi configuration)
+    Dominik Dzienia (refactoring, migration to Platform.IO)
+    Patrick Sonnerat and Claude (M5Unified migration, Dexcom Share and LibreLinkUp
+      data sources, web configuration, QR codes, JC3248W535 port, web flasher)
 */
 
 // Official M5Stack Arduino board definitions are required, please add board from following location:

@@ -1,3 +1,11 @@
+/*
+  IniFile - library to read INI files from SD card.
+  Copyright (C) Steve Marple <stevemarple@googlemail.com>
+  https://github.com/stevemarple/IniFile
+  Licensed under the GNU LGPL v2.1.
+  Modified for M5_NightscoutMon (Arduino SD/String support); this copy
+  differs from the upstream library.
+*/
 #ifndef _INIFILE_H
 #define _INIFILE_H
 

@@ -4,11 +4,11 @@
 
 ## M5Stack Nightscout monitor
 
-##### M5Stack Nightscout monitor<br/>Copyright (C) 2018-2020 Martin Lukasek <martin@lukasek.cz>
+##### M5Stack Nightscout monitor<br/>Copyright (C) 2018-2023 Martin Lukasek <martin@lukasek.cz><br/>Copyright (C) 2021-2026 Patrick Sonnerat and contributors
 ###### This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 ###### This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
 ###### You should have received a copy of the GNU General Public License along with this program. If not, see <https://www.gnu.org/licenses/>. 
-###### This software uses some 3rd party libraries:<br/>IniFile by Steve Marple (GNU LGPL v2.1)<br/>ArduinoJson by Benoit BLANCHON (MIT License)<br/>IoT Icon Set by Artur Funk (GPL v3)<br/>DHT12 by Bobadas (Public domain)<br/><br/>Additions to the code:<br/>Peter Leimbach (Nightscout token)<br/>Sulka Haro (Nightscout API queries help)<br/>Dominik Dzienia _(Refactoring, migration to Platform.IO)_<br/></br>Patrick Sonnerat and Claude (M5Unified and QR codes)<br/>The Dexcom Share ("Follow") data source (`M5NSDexcom.cpp`/`.h`) was adapted from the Dexcom Share protocol implementation in [ktomy/nightscout-clock](https://github.com/ktomy/nightscout-clock) (`BGSourceDexcom`), which is licensed under the [GNU LGPL v2.1](https://github.com/ktomy/nightscout-clock/blob/main/LICENSE).
+###### See [License and credits](#license-and-credits) below for the third-party code this project includes and the people who contributed to it.
 
 ### Contents
 [What is this good for?](#m5stack-nightscout-monitor-1)  
@@ -20,6 +20,7 @@
 [Battery](#battery)  
 [Installation and support](#installation-and-support)  
 [Firmware updates (OTA)](#firmware-updates-ota)  
+[License and credits](#license-and-credits)  
 [Donations - support the project](#donations) :+1:
 
 
@@ -227,6 +228,28 @@ Once your M5Stack is set up and connected to Wi-Fi, you don't need a computer to
 Firmware is served directly from this GitHub repository — the [`Binaries/`](Binaries) folder on `master` — over HTTPS; there is no separate update server. The device automatically requests the binary matching its own board (`Basic_4MB`, `ESP32_16MB` or `CoreS3`, see [`Scripts/README.md`](Scripts/README.md#the-three-firmwares)), so a Basic, Fire, Core2 or CoreS3 all get the correct image without any manual selection.
 
 If you maintain your own fork, see [`Scripts/README.md`](Scripts/README.md#publishing-an-ota-update) for how to build and publish updates for it.
+
+### License and credits
+
+M5_NightscoutMon is free software under the **[GNU GPL v3 (or later)](LICENSE)**. Copyright (C) 2018-2023 Martin Lukasek, Copyright (C) 2021-2026 Patrick Sonnerat and contributors.
+
+**Third-party code included in this repository:**
+
+| Code | Origin | License |
+| ---- | ------ | ------- |
+| `IniFile.cpp/h` | [IniFile](https://github.com/stevemarple/IniFile) by Steve Marple (modified) | GNU LGPL v2.1 |
+| `iot_iconset_16x16.c` | [IoT Icon Set](http://engsta.com/iot-icon-set-for-i2c-oled-displays/) by Artur Funk | GPL v3 |
+| `DHT12.cpp/h` | DHT12 library by Bobadas | Public domain |
+| `SHT3X.cpp/h` | M5Stack ENV unit example code | MIT |
+| `Free_Fonts.h` | Font aliases from [Bodmer's TFT_eSPI](https://github.com/Bodmer/TFT_eSPI) examples | FreeBSD |
+| `M5NSDexcom.cpp/h` | Dexcom Share protocol adapted from [ktomy/nightscout-clock](https://github.com/ktomy/nightscout-clock) (`BGSourceDexcom`) | [GNU LGPL v2.1](https://github.com/ktomy/nightscout-clock/blob/main/LICENSE) |
+| `M5NSLibre.cpp/h` | LibreLinkUp protocol adapted from [ktomy/nightscout-clock](https://github.com/ktomy/nightscout-clock) (`BGSourceLibreLinkUp`) | [GNU LGPL v2.1](https://github.com/ktomy/nightscout-clock/blob/main/LICENSE) |
+
+**Library dependencies** (installed separately, not part of this repository): [M5Unified](https://github.com/m5stack/M5Unified) and [M5GFX](https://github.com/m5stack/M5GFX) by M5Stack (MIT), [ArduinoJson](https://arduinojson.org/) by Benoit Blanchon (MIT), [Adafruit NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) (LGPL v3), and — for the Guition JC3248W535 build only — [Arduino_GFX](https://github.com/moononournation/Arduino_GFX) by moononournation (BSD 2-Clause). The [web flasher page](https://psonnera.github.io/M5_NightscoutMon/Flasher/) uses [ESP Web Tools](https://esphome.github.io/esp-web-tools/) (Apache 2.0).
+
+**Contributors and additions:** Peter Leimbach (Nightscout token), Sulka Haro (Nightscout API queries help), Ben West (AP WiFi configuration), Dominik Dzienia (refactoring, migration to Platform.IO), Patrick Sonnerat and Claude (M5Unified migration, Dexcom Share and LibreLinkUp data sources, web configuration, QR codes, JC3248W535 port, web flasher), and everyone in the [commit history](https://github.com/psonnera/M5_NightscoutMon/graphs/contributors).
+
+The [M5Stack Loader](https://github.com/psonnera/M5StackLoader) Android app that installs this firmware is a separate project, also GPL-3.0-or-later, with its own [third-party notices](https://github.com/psonnera/M5StackLoader/blob/master/THIRD-PARTY-NOTICES.md).
 
 ### Donations
 

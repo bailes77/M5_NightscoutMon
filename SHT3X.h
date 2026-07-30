@@ -1,3 +1,8 @@
+/*
+  SHT3X temperature/humidity sensor driver.
+  From M5Stack's ENV unit example code (https://github.com/m5stack),
+  MIT License, Copyright (c) M5Stack.
+*/
 #ifndef __SHT3X_H
 #define __HT3X_H
 
