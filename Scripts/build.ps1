@@ -1,11 +1,12 @@
 <#
 .SYNOPSIS
     Compiles M5_NightscoutMon into the minimum set of firmwares for the whole
-    M5Stack lineup and exports them to <repo>\Binaries\<group>\.
+    M5Stack lineup plus supported third-party boards, and exports them to
+    <repo>\Binaries\<group>\.
 
 .DESCRIPTION
     One M5Unified source now covers every board; the firmware count is driven only
-    by chip architecture + flash size. Three build groups:
+    by chip architecture + flash size. Four build groups:
 
       Basic4MB   - old Basic (<=2020.5, 4 MB, no PSRAM). min_spiffs is the only
                    4 MB scheme that fits AND keeps OTA. This board is the growth
@@ -17,12 +18,15 @@
                    no-PSRAM Basic 16 MB (Fire/Core2 PSRAM sits idle; app needs none).
       CoreS3     - all CoreS3 (K128/Lite/SE/K149). Separate binary only because
                    ESP32-S3 is a different CPU architecture.
+      JC3248W535 - Guition JC3248W535 3.5" (non-M5 ESP32-S3 board): the M5Unified
+                   calls are swapped for the hal_jc3248w535 shim via
+                   -DDEVICE_JC3248W535. Needs "GFX Library for Arduino" 1.6.0.
 
     Board sub-variants (AXP192/AXP2101 PMU, IMU, RTC, touch) are auto-detected by
     M5Unified at runtime, so no further binaries are needed.
 
 .PARAMETER Target
-    Basic4MB | ESP32_16MB | CoreS3 | All. Omit for an interactive menu.
+    Basic4MB | ESP32_16MB | CoreS3 | JC3248W535 | All. Omit for an interactive menu.
 
 .PARAMETER ArduinoCli
     Path to arduino-cli.exe. Defaults to the one bundled with Arduino IDE 2.x,
@@ -30,7 +34,7 @@
 
 .EXAMPLE
     .\build.ps1                 # interactive menu
-    .\build.ps1 -Target All     # build all three firmwares
+    .\build.ps1 -Target All     # build all four firmwares
 #>
 
 [CmdletBinding()]
@@ -75,8 +79,9 @@ $Targets = [ordered]@{
     'CoreS3'     = @{ Fqbn = 'esp32:esp32:m5stack-cores3:PartitionScheme=default_16MB';              Folder = 'CoreS3';      Desc = 'all CoreS3 (ESP32-S3)' }
     # Non-M5 board: generic S3 FQBN + the DEVICE define that swaps M5Unified for the
     # hal_jc3248w535 shim. Requires the Arduino_GFX library ("GFX Library for Arduino",
-    # pin 1.6.0). SkipInAll keeps it out of release ('All') builds until HW-validated.
-    'JC3248W535' = @{ Fqbn = 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,FlashMode=dio,CDCOnBoot=cdc'; Folder = 'JC3248W535'; Desc = 'Guition JC3248W535 3.5in (ESP32-S3)'; Extra = '-DDEVICE_JC3248W535'; SkipInAll = $true }
+    # pin 1.6.0 - 1.6.1 breaks the AXS15231B panel). Part of the release ('All') set:
+    # it is distributed through the web flasher and OTA like the M5 groups.
+    'JC3248W535' = @{ Fqbn = 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,FlashMode=dio,CDCOnBoot=cdc'; Folder = 'JC3248W535'; Desc = 'Guition JC3248W535 3.5in (ESP32-S3)'; Extra = '-DDEVICE_JC3248W535' }
 }
 
 # Common flag: matches the PlatformIO fix for the missing gpio_deep_sleep_hold_dis
@@ -117,7 +122,7 @@ if (-not $Target) {
 $toBuild = if ($Target -eq 'All') { @($Targets.Keys | Where-Object { -not $Targets[$_].SkipInAll }) } else { @($Target) }
 
 # --- Auto-bump version on release ('All') builds ------------------------------
-# A full build of all three targets is treated as a release: bump the same-day
+# A full build of all targets is treated as a release: bump the same-day
 # sequence number (or start a new day at 01) and write it back into the sketch
 # *before* compiling, so the binary, the on-device version display, and
 # update.inf all carry the new version. Single-target builds are test

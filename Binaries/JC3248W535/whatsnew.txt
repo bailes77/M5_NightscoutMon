@@ -1,0 +1,1 @@
+First firmware for the Guition JC3248W535 3.5" display: full M5_NightscoutMon feature set (Nightscout, Dexcom Share and LibreLinkUp sources, web configuration, OTA updates) on a low-cost non-M5Stack board.
