@@ -25,12 +25,19 @@
     Board sub-variants (AXP192/AXP2101 PMU, IMU, RTC, touch) are auto-detected by
     M5Unified at runtime, so no further binaries are needed.
 
+    First time on a machine? Run Scripts\setup.ps1 (or setup.bat) once - it
+    installs arduino-cli (if needed), the pinned esp32 board core and all
+    required libraries (versions in Scripts\deps.psd1). This script re-checks
+    those dependencies before every build and fails with instructions if
+    something is missing.
+
 .PARAMETER Target
     Basic4MB | ESP32_16MB | CoreS3 | JC3248W535 | All. Omit for an interactive menu.
 
 .PARAMETER ArduinoCli
-    Path to arduino-cli.exe. Defaults to the one bundled with Arduino IDE 2.x,
-    or the ARDUINO_CLI environment variable if set.
+    Path to arduino-cli.exe. If omitted, the script looks at the ARDUINO_CLI
+    environment variable, then PATH, then the known Arduino IDE 2.x install
+    locations (per-user and all-users).
 
 .EXAMPLE
     .\build.ps1                 # interactive menu
@@ -51,25 +58,23 @@ param(
 $ErrorActionPreference = 'Stop'
 
 # --- Paths --------------------------------------------------------------------
+# The sketch is the single .ino in the repo root (this script lives in <repo>\Scripts\).
 $RepoRoot = Split-Path $PSScriptRoot -Parent
-$Sketch   = Join-Path $RepoRoot 'M5_NightscoutMon.ino'
-
-if (-not (Test-Path $Sketch)) {
-    throw "Sketch not found: $Sketch"
+$inoFiles = @(Get-ChildItem -Path $RepoRoot -Filter *.ino -File)
+if ($inoFiles.Count -ne 1) {
+    throw "Expected exactly one .ino sketch in $RepoRoot, found $($inoFiles.Count)."
 }
+$Sketch     = $inoFiles[0].FullName
+$SketchName = $inoFiles[0].BaseName
 
-# --- Locate arduino-cli -------------------------------------------------------
-if (-not $ArduinoCli) { $ArduinoCli = $env:ARDUINO_CLI }
-if (-not $ArduinoCli) {
-    $ArduinoCli = 'C:/Users/patri/AppData/Local/Programs/Arduino IDE/resources/app/lib/backend/resources/arduino-cli.exe'
-}
-if (-not (Test-Path $ArduinoCli)) {
-    throw "arduino-cli not found at '$ArduinoCli'. Pass -ArduinoCli <path> or set `$env:ARDUINO_CLI."
-}
-
-# --- Environment so the CLI finds the ESP32 core + libraries ------------------
-$env:ARDUINO_DIRECTORIES_DATA = 'C:/Users/patri/AppData/Local/Arduino15'
-$env:ARDUINO_DIRECTORIES_USER = 'C:/Users/patri/Documents/Arduino'
+# --- Locate arduino-cli + Arduino folders (helpers in common.ps1) -------------
+# Order: -ArduinoCli param > ARDUINO_CLI env var > PATH > known install locations
+# (Arduino IDE 2.x per-user/all-users layouts, plus the setup.ps1 standalone
+# folder). Cores/libraries resolve to the standard per-user folders unless
+# ARDUINO_DIRECTORIES_DATA / ARDUINO_DIRECTORIES_USER are already set.
+. (Join-Path $PSScriptRoot 'common.ps1')
+$ArduinoCli = Find-ArduinoCli -Candidate $ArduinoCli
+Initialize-ArduinoDirs
 
 # --- Target table -------------------------------------------------------------
 # Order matters for the interactive menu.
@@ -121,6 +126,17 @@ if (-not $Target) {
 # 'All' = the release set; targets marked SkipInAll build only when named explicitly.
 $toBuild = if ($Target -eq 'All') { @($Targets.Keys | Where-Object { -not $Targets[$_].SkipInAll }) } else { @($Target) }
 
+# --- Dependency sanity check --------------------------------------------------
+# Fail early with an actionable message instead of a cryptic compile error when
+# the esp32 core or a required library is missing or the wrong version
+# (pinned versions: deps.psd1; checks: common.ps1).
+$depCheck = Get-DependencyProblems -Targets $toBuild
+foreach ($w in $depCheck.Warnings) { Write-Host "WARNING: $w" -ForegroundColor Yellow }
+if ($depCheck.Problems) {
+    throw ("Missing/incompatible build dependencies:`n  - " + ($depCheck.Problems -join "`n  - ") +
+           "`nRun Scripts\setup.bat (or Scripts\setup.ps1) to install everything automatically.")
+}
+
 # --- Auto-bump version on release ('All') builds ------------------------------
 # A full build of all targets is treated as a release: bump the same-day
 # sequence number (or start a new day at 01) and write it back into the sketch
@@ -157,7 +173,7 @@ if ($Target -eq 'All') {
 # different targets clobbered each other's object files. (Concurrent builds of
 # the *same* target will still collide - don't launch build.ps1 twice for the
 # same -Target at once.)
-$BuildCacheRoot = Join-Path $env:LOCALAPPDATA 'arduino\builds\M5_NightscoutMon'
+$BuildCacheRoot = Join-Path $env:LOCALAPPDATA "arduino\builds\$SketchName"
 
 $results = @()
 foreach ($name in $toBuild) {

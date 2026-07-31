@@ -6,6 +6,30 @@ exists is **CPU architecture + flash size** — not source differences. That red
 firmwares** for the M5Stack lineup, plus a fourth for the Guition JC3248W535 (a non-M5 board
 that swaps M5Unified for a small HAL shim).
 
+## First-time setup (any Windows PC)
+
+On a fresh machine, nothing but this git clone is needed:
+
+```
+Scripts\setup.bat                 # or: Scripts\setup.ps1  (-DownloadCli for unattended)
+```
+
+It is idempotent — re-run any time; anything already present is skipped. It installs, into the
+standard per-user Arduino locations (`%LOCALAPPDATA%\Arduino15` and `Documents\Arduino`, shared
+with the Arduino IDE):
+
+* **arduino-cli** — found via `$env:ARDUINO_CLI`, PATH, or an Arduino IDE 2.x install; if none
+  exists it offers to download the standalone CLI to `%USERPROFILE%\tools\arduino-cli` (a
+  location `build.ps1` also probes).
+* **esp32 board core 2.0.16** (`esp32:esp32`) — the project needs the 2.x core line and does
+  not build on 3.x.
+* **Libraries**: M5Unified, M5GFX, ArduinoJson, Adafruit NeoPixel, and "GFX Library for
+  Arduino" (Arduino_GFX) pinned at **exactly 1.6.0**. Existing installs are kept (newer is
+  fine) except where an exact version is required.
+
+All pinned versions live in one place, `Scripts\deps.psd1`. `build.ps1` re-checks these
+dependencies before every build and points you back to setup if something is missing.
+
 ## Usage
 
 ```
@@ -17,8 +41,13 @@ Scripts\build.ps1 -Target CoreS3  # one target (PowerShell directly)
 `build.bat` is just a double-click launcher for `build.ps1` (bypasses the PowerShell execution
 policy). Each build lands in `Binaries\<group>\`.
 
-To use a different `arduino-cli`, pass `-ArduinoCli <path>` or set `$env:ARDUINO_CLI`. The default
-is the one bundled with Arduino IDE 2.x.
+The script finds `arduino-cli` automatically, in this order: `-ArduinoCli <path>` parameter →
+`$env:ARDUINO_CLI` → `arduino-cli` on PATH → the known Arduino IDE 2.x install locations
+(per-user `%LOCALAPPDATA%\Programs\Arduino IDE` and all-users `%ProgramFiles%\Arduino IDE`) →
+`%USERPROFILE%\tools\arduino-cli` (where setup drops the standalone CLI).
+The board cores and libraries are looked up in the standard per-user Arduino folders
+(`%LOCALAPPDATA%\Arduino15` and `Documents\Arduino`); if yours live elsewhere, set
+`$env:ARDUINO_DIRECTORIES_DATA` / `$env:ARDUINO_DIRECTORIES_USER` before running.
 
 Each target builds in its own cache folder (`%LOCALAPPDATA%\arduino\builds\M5_NightscoutMon\<target>`),
 so different targets can build concurrently without corrupting each other's object files. Pass
@@ -36,7 +65,7 @@ so different targets can build concurrently without corrupting each other's obje
 **JC3248W535 is part of `-Target All`** (release) builds, so it ships with every release like
 the M5 groups — which means a release build requires the
 **"GFX Library for Arduino" (Arduino_GFX) 1.6.0** library (1.6.1 is reported broken with
-its AXS15231B panel): `arduino-cli lib install "GFX Library for Arduino@1.6.0"`.
+its AXS15231B panel). `Scripts\setup.bat` installs it at exactly that version.
 
 Core2 and CoreS3 sub-variants (AXP192 vs AXP2101 PMU, BMI270 vs MPU6886 IMU, RTC, touch) are all
 detected at runtime by M5Unified — they need no separate binary.
@@ -66,10 +95,13 @@ Never flash `ESP32_16MB` to a 4 MB Basic (won't fit), and don't cross the ESP32 
 
 Each folder holds three files: `*.ino.bin` (app), `*.ino.bootloader.bin`, `*.ino.partitions.bin`.
 
+In the commands below, replace `<port>` with your serial port (e.g. `COM5` — check
+Device Manager or `arduino-cli board list`).
+
 **Easiest — let arduino-cli place them at the right offsets:**
 
 ```
-arduino-cli upload -p COM5 `
+arduino-cli upload -p <port> `
   --fqbn esp32:esp32:m5stack-fire:PartitionScheme=default,PSRAM=disabled `
   --input-dir Binaries\ESP32_16MB
 ```
@@ -79,7 +111,7 @@ arduino-cli upload -p COM5 `
 
 ESP32 boards (`Basic_4MB`, `ESP32_16MB`) — bootloader at **0x1000**:
 ```
-esptool --chip esp32 -p COM5 write_flash `
+esptool --chip esp32 -p <port> write_flash `
   0x1000  M5_NightscoutMon.ino.bootloader.bin `
   0x8000  M5_NightscoutMon.ino.partitions.bin `
   0x10000 M5_NightscoutMon.ino.bin
@@ -87,7 +119,7 @@ esptool --chip esp32 -p COM5 write_flash `
 
 ESP32-S3 boards (`CoreS3`, `JC3248W535`) — bootloader at **0x0**:
 ```
-esptool --chip esp32s3 -p COM5 write_flash `
+esptool --chip esp32s3 -p <port> write_flash `
   0x0     M5_NightscoutMon.ino.bootloader.bin `
   0x8000  M5_NightscoutMon.ino.partitions.bin `
   0x10000 M5_NightscoutMon.ino.bin
