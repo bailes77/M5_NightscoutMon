@@ -97,8 +97,9 @@
 
   <div class="notice">
     <b>Pick the entry that matches your device exactly.</b> The flasher blocks ESP32 ↔ ESP32-S3
-    mix-ups automatically, but it cannot tell a 4&nbsp;MB Basic from a 16&nbsp;MB one, or a CoreS3
-    from a JC3248W535 — flashing the wrong one of those will not work. Connect only one device at a
+    mix-ups automatically, but it cannot tell a 4&nbsp;MB Basic from a 16&nbsp;MB one, a Fire/Core2
+    from a Waveshare Touch-LCD-3.5, or a CoreS3 from a JC3248W535 — flashing the wrong one of
+    those will not work. Connect only one device at a
     time via USB, then press its Install button and choose the serial port that appears.
   </div>
 
@@ -146,6 +147,17 @@
     </esp-web-install-button>
   </div>
 
+  <div class="card">
+    <div class="card-info">
+      <h2>Waveshare ESP32-Touch-LCD-3.5</h2>
+      <p>Waveshare 3.5&Prime; 320&times;480 classic-ESP32 display board with battery management (non-M5Stack). Not yet hardware-validated.</p>
+      <div class="version" data-group="WS_TouchLCD35">Version: <b>…</b></div>
+    </div>
+    <esp-web-install-button manifest="manifest-ws_touchlcd35.json" data-group="WS_TouchLCD35">
+      <button slot="activate">Install</button>
+    </esp-web-install-button>
+  </div>
+
   <div class="notes">
     <h3>Before you start</h3>
     <ul>
@@ -155,7 +167,10 @@
       <li>Use a USB <b>data</b> cable — many bundled cables are charge-only.</li>
       <li>Drivers (<b>Windows only</b> — macOS and Linux have them built in):
           <b>M5Stack Basic/Fire</b> need the <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers">CP210x driver</a>,
-          <b>Core2</b> needs the <a href="https://docs.m5stack.com/en/download">CH9102 driver</a>.
+          <b>Core2</b> needs the <a href="https://docs.m5stack.com/en/download">CH9102 driver</a>,
+          the <b>Waveshare Touch-LCD-3.5</b> has a USB-UART bridge (WCH CH34x family on recent
+          Waveshare boards — Windows 10/11 usually recognise it out of the box, otherwise install the
+          <a href="https://www.wch-ic.com/downloads/CH343SER_EXE.html">CH343 driver</a>).
           <b>CoreS3</b> and the <b>JC3248W535</b> use the chip's native USB and need no driver on
           any system.</li>
       <li>If a CoreS3 or JC3248W535 doesn't show a serial port, hold its <b>BOOT</b> button while

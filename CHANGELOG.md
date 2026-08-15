@@ -3,6 +3,12 @@
 ## Revisions
 
 
+### 15 August 2026 (Waveshare ESP32-Touch-LCD-3.5 port)
+
+* Second non-M5Stack target: the Waveshare ESP32-Touch-LCD-3.5 (classic ESP32-D0WDR2, 16 MB flash, 2 MB PSRAM, 3.5" 320x480 ST7796S IPS on SPI, FT6336 touch, TCA9554 IO expander, AXP2101 PMIC, ES8311 codec, microSD). Built with `Scripts\build.ps1 -Target WS_TouchLCD35` into `Binaries\WS_TouchLCD35\`; excluded from release (`-Target All`) builds until hardware-validated. Web flasher card + manifest and OTA path (`WS_TouchLCD35`) added; no new library is needed - the panel, backlight and touch are driven by M5GFX's own LovyanGFX classes (`hal_ws_touchlcd35.h/.cpp`, selected by `-DDEVICE_WS_TOUCH_LCD_35` in `M5NSDevice.h`).
+* Same shim strategy as the JC3248W535: the unchanged 320x240 UI draws into an offscreen sprite, a background task composes it exactly 1.5x into a 480x320 landscape frame and pushes it whole (the ST7796 rotates in hardware, so no rotation trick is needed). Touch thirds at the bottom become BtnA/B/C. Because the panel shares its SPI bus with the microSD, the frame push is serialised on the Arduino SPI transaction mutex that the SD driver also uses.
+* Unlike the JC, this board has a PMIC: battery level/voltage come from the AXP2101 fuel gauge (the battery icon shows) and long-press power-off is a real AXP2101 shutdown - the PWR button turns the board back on. Alarms are synthesized I2S tones through the ES8311 (32-bit slots, MCLK derived from BCLK as in the vendor examples). Board bring-up knobs are documented in the shim: `WS_LAND_ROT` (landscape direction), panel `invert`/`rgb_order`, TCA9554 EXIO mapping.
+
 ### 28 July 2026 (Guition JC3248W535 port - branch JC3248W535)
 
 * First non-M5Stack target: the Guition JC3248W535 (ESP32-S3, 3.5" 320x480 IPS, AXS15231B panel+touch on QSPI/I2C, microSD, NS4168 I2S speaker, no physical buttons). Built with `Scripts\build.ps1 -Target JC3248W535` into `Binaries\JC3248W535\`; intentionally excluded from release (`-Target All`) builds until hardware-validated. Requires the "GFX Library for Arduino" (Arduino_GFX) **1.6.0** (1.6.1 is reported broken with this panel).

@@ -1,4 +1,4 @@
-#include "M5NSDevice.h"  // SD.h + M5Unified, or the JC3248W535 shim (build with -DDEVICE_JC3248W535)
+#include "M5NSDevice.h"  // SD.h + M5Unified, or a non-M5 board shim (-DDEVICE_JC3248W535 / -DDEVICE_WS_TOUCH_LCD_35)
 
 #include <Preferences.h>
 #include <WiFi.h>
@@ -30,6 +30,10 @@ static const char* updateVariantPath() {
   // Must come before the generic S3 branch: a JC board pulling the CoreS3 image
   // would flash firmware for the wrong panel/pins.
   return "JC3248W535";
+#elif defined(DEVICE_WS_TOUCH_LCD_35)
+  // Classic-ESP32 16MB board: must come before the flash-size fallback, which would
+  // otherwise route it to the ESP32_16MB (M5 panel/pins) image.
+  return "WS_TouchLCD35";
 #elif CONFIG_IDF_TARGET_ESP32S3
   return "CoreS3";
 #else

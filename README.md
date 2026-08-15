@@ -242,12 +242,13 @@ M5_NightscoutMon is free software under the **[GNU GPL v3 (or later)](LICENSE)**
 | `DHT12.cpp/h` | DHT12 library by Bobadas | Public domain |
 | `SHT3X.cpp/h` | M5Stack ENV unit example code | MIT |
 | `Free_Fonts.h` | Font aliases from [Bodmer's TFT_eSPI](https://github.com/Bodmer/TFT_eSPI) examples | FreeBSD |
+| `hal_ws_touchlcd35.cpp/h` | ST7796 panel init list from [LovyanGFX](https://github.com/lovyan03/LovyanGFX) by lovyan03; ES8311 codec setup condensed from Espressif's [es8311 driver](https://github.com/espressif/esp-bsp/tree/master/components/es8311) (Waveshare ESP32-Touch-LCD-3.5 build only) | FreeBSD / Apache 2.0 |
 | `M5NSDexcom.cpp/h` | Dexcom Share protocol adapted from [ktomy/nightscout-clock](https://github.com/ktomy/nightscout-clock) (`BGSourceDexcom`) | [GNU LGPL v2.1](https://github.com/ktomy/nightscout-clock/blob/main/LICENSE) |
 | `M5NSLibre.cpp/h` | LibreLinkUp protocol adapted from [ktomy/nightscout-clock](https://github.com/ktomy/nightscout-clock) (`BGSourceLibreLinkUp`) | [GNU LGPL v2.1](https://github.com/ktomy/nightscout-clock/blob/main/LICENSE) |
 
 **Library dependencies** (installed separately, not part of this repository): [M5Unified](https://github.com/m5stack/M5Unified) and [M5GFX](https://github.com/m5stack/M5GFX) by M5Stack (MIT), [ArduinoJson](https://arduinojson.org/) by Benoit Blanchon (MIT), [Adafruit NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) (LGPL v3), and — for the Guition JC3248W535 build only — [Arduino_GFX](https://github.com/moononournation/Arduino_GFX) by moononournation (BSD 2-Clause). The [web flasher page](https://psonnera.github.io/M5_NightscoutMon/Flasher/) uses [ESP Web Tools](https://esphome.github.io/esp-web-tools/) (Apache 2.0).
 
-**Contributors and additions:** Peter Leimbach (Nightscout token), Sulka Haro (Nightscout API queries help), Ben West (AP WiFi configuration), Dominik Dzienia (refactoring, migration to Platform.IO), Patrick Sonnerat and Claude (M5Unified migration, Dexcom Share and LibreLinkUp data sources, web configuration, QR codes, JC3248W535 port, web flasher), and everyone in the [commit history](https://github.com/psonnera/M5_NightscoutMon/graphs/contributors).
+**Contributors and additions:** Peter Leimbach (Nightscout token), Sulka Haro (Nightscout API queries help), Ben West (AP WiFi configuration), Dominik Dzienia (refactoring, migration to Platform.IO), Patrick Sonnerat and Claude (M5Unified migration, Dexcom Share and LibreLinkUp data sources, web configuration, QR codes, JC3248W535 and Waveshare ESP32-Touch-LCD-3.5 ports, web flasher), and everyone in the [commit history](https://github.com/psonnera/M5_NightscoutMon/graphs/contributors).
 
 The [M5Stack Loader](https://github.com/psonnera/M5StackLoader) Android app that installs this firmware is a separate project, also GPL-3.0-or-later, with its own [third-party notices](https://github.com/psonnera/M5StackLoader/blob/master/THIRD-PARTY-NOTICES.md).
 

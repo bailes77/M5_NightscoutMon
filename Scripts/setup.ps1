@@ -140,7 +140,7 @@ foreach ($lib in $deps.Libraries) {
 
 # --- 4. Final verification ----------------------------------------------------
 Write-Host ''
-$check = Get-DependencyProblems -Targets @('Basic4MB', 'ESP32_16MB', 'CoreS3', 'JC3248W535')
+$check = Get-DependencyProblems -Targets @('Basic4MB', 'ESP32_16MB', 'CoreS3', 'JC3248W535', 'WS_TouchLCD35')
 foreach ($w in $check.Warnings) { Write-Host "WARNING: $w" -ForegroundColor Yellow }
 if ($check.Problems) {
     throw ("Setup finished but the environment still has problems:`n  - " + ($check.Problems -join "`n  - "))

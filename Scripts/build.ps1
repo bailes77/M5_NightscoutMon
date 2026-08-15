@@ -6,7 +6,7 @@
 
 .DESCRIPTION
     One M5Unified source now covers every board; the firmware count is driven only
-    by chip architecture + flash size. Four build groups:
+    by chip architecture + flash size. Five build groups:
 
       Basic4MB   - old Basic (<=2020.5, 4 MB, no PSRAM). min_spiffs is the only
                    4 MB scheme that fits AND keeps OTA. This board is the growth
@@ -21,6 +21,11 @@
       JC3248W535 - Guition JC3248W535 3.5" (non-M5 ESP32-S3 board): the M5Unified
                    calls are swapped for the hal_jc3248w535 shim via
                    -DDEVICE_JC3248W535. Needs "GFX Library for Arduino" 1.6.0.
+      WS_TouchLCD35 - Waveshare ESP32-Touch-LCD-3.5 (non-M5 classic ESP32, 16 MB,
+                   2 MB PSRAM, ST7796 SPI panel): M5Unified swapped for the
+                   hal_ws_touchlcd35 shim via -DDEVICE_WS_TOUCH_LCD_35. Drawn with
+                   M5GFX only (no extra library). Not part of 'All' until
+                   hardware-validated.
 
     Board sub-variants (AXP192/AXP2101 PMU, IMU, RTC, touch) are auto-detected by
     M5Unified at runtime, so no further binaries are needed.
@@ -32,7 +37,7 @@
     something is missing.
 
 .PARAMETER Target
-    Basic4MB | ESP32_16MB | CoreS3 | JC3248W535 | All. Omit for an interactive menu.
+    Basic4MB | ESP32_16MB | CoreS3 | JC3248W535 | WS_TouchLCD35 | All. Omit for an interactive menu.
 
 .PARAMETER ArduinoCli
     Path to arduino-cli.exe. If omitted, the script looks at the ARDUINO_CLI
@@ -41,12 +46,12 @@
 
 .EXAMPLE
     .\build.ps1                 # interactive menu
-    .\build.ps1 -Target All     # build all four firmwares
+    .\build.ps1 -Target All     # build the release set (targets marked SkipInAll excluded)
 #>
 
 [CmdletBinding()]
 param(
-    [ValidateSet('Basic4MB', 'ESP32_16MB', 'CoreS3', 'JC3248W535', 'All')]
+    [ValidateSet('Basic4MB', 'ESP32_16MB', 'CoreS3', 'JC3248W535', 'WS_TouchLCD35', 'All')]
     [string]$Target,
 
     [string]$ArduinoCli,
@@ -87,6 +92,12 @@ $Targets = [ordered]@{
     # pin 1.6.0 - 1.6.1 breaks the AXS15231B panel). Part of the release ('All') set:
     # it is distributed through the web flasher and OTA like the M5 groups.
     'JC3248W535' = @{ Fqbn = 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,FlashMode=dio,CDCOnBoot=cdc'; Folder = 'JC3248W535'; Desc = 'Guition JC3248W535 3.5in (ESP32-S3)'; Extra = '-DDEVICE_JC3248W535' }
+    # Non-M5 board on a classic ESP32 (16 MB flash, 2 MB in-package PSRAM): the m5stack-fire
+    # FQBN (generic ESP32 + 16 MB + default_16MB OTA partitions, pins are all set explicitly
+    # by the shim) + the DEVICE define that swaps M5Unified for the hal_ws_touchlcd35 shim. PSRAM
+    # must be on (UI + frame sprites live there). Excluded from 'All' until validated on
+    # hardware - build it explicitly with -Target WS_TouchLCD35.
+    'WS_TouchLCD35' = @{ Fqbn = 'esp32:esp32:m5stack-fire:PartitionScheme=default,PSRAM=enabled'; Folder = 'WS_TouchLCD35'; Desc = 'Waveshare ESP32-Touch-LCD-3.5 (ESP32, 16MB)'; Extra = '-DDEVICE_WS_TOUCH_LCD_35'; SkipInAll = $true }
 }
 
 # Common flag: matches the PlatformIO fix for the missing gpio_deep_sleep_hold_dis

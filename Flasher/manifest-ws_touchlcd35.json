@@ -1,0 +1,16 @@
+{
+  "name": "M5_NightscoutMon — Waveshare ESP32-Touch-LCD-3.5",
+  "version": "see update.inf",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 0,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "../Binaries/WS_TouchLCD35/M5_NightscoutMon.ino.bootloader.bin", "offset": 4096 },
+        { "path": "../Binaries/WS_TouchLCD35/M5_NightscoutMon.ino.partitions.bin", "offset": 32768 },
+        { "path": "../Binaries/WS_TouchLCD35/M5_NightscoutMon.ino.bin", "offset": 65536 }
+      ]
+    }
+  ]
+}

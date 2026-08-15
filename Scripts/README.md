@@ -3,8 +3,8 @@
 Since the M5Unified migration, **one source** (`M5_NightscoutMon.ino`) compiles for the whole
 M5Stack lineup. The board is auto-detected at runtime, so the only reason more than one binary
 exists is **CPU architecture + flash size** — not source differences. That reduces to **three
-firmwares** for the M5Stack lineup, plus a fourth for the Guition JC3248W535 (a non-M5 board
-that swaps M5Unified for a small HAL shim).
+firmwares** for the M5Stack lineup, plus one each for the Guition JC3248W535 and the Waveshare
+ESP32-Touch-LCD-3.5 (non-M5 boards that swap M5Unified for a small HAL shim).
 
 ## First-time setup (any Windows PC)
 
@@ -53,7 +53,7 @@ Each target builds in its own cache folder (`%LOCALAPPDATA%\arduino\builds\M5_Ni
 so different targets can build concurrently without corrupting each other's object files. Pass
 `-Clean` to wipe a target's build folder first for a guaranteed-fresh build.
 
-## The four firmwares
+## The five firmwares
 
 | Firmware (folder)     | Build (FQBN)                                                   | Runs on                                   |
 |-----------------------|---------------------------------------------------------------|-------------------------------------------|
@@ -61,11 +61,18 @@ so different targets can build concurrently without corrupting each other's obje
 | `Binaries\ESP32_16MB` | `m5stack-fire` · `default` (16 MB) · **PSRAM off**            | Basic 16 MB/v2.7, Fire, **all** Core2     |
 | `Binaries\CoreS3`     | `m5stack-cores3` · `default_16MB`                            | **all** CoreS3 (K128 / Lite / SE / K149)  |
 | `Binaries\JC3248W535` | `esp32s3` · `app3M_fat9M_16MB` · PSRAM opi · flash dio · `-DDEVICE_JC3248W535` | Guition JC3248W535 3.5" only (non-M5 board) |
+| `Binaries\WS_TouchLCD35` | `m5stack-fire` · `default` (16 MB) · **PSRAM on** · `-DDEVICE_WS_TOUCH_LCD_35` | Waveshare ESP32-Touch-LCD-3.5 only (non-M5 board) |
 
 **JC3248W535 is part of `-Target All`** (release) builds, so it ships with every release like
 the M5 groups — which means a release build requires the
 **"GFX Library for Arduino" (Arduino_GFX) 1.6.0** library (1.6.1 is reported broken with
 its AXS15231B panel). `Scripts\setup.bat` installs it at exactly that version.
+
+**WS_TouchLCD35 is not yet part of `-Target All`** (`SkipInAll`) until it has been validated on
+hardware — build it explicitly with `-Target WS_TouchLCD35`. It needs no extra library: the
+ST7796 panel, backlight and FT6336 touch are driven by M5GFX's bundled LovyanGFX classes. It
+reuses the `m5stack-fire` board definition purely for its 16 MB / `default_16MB` OTA layout (all
+pins are set explicitly by the shim); PSRAM must be on because the UI and frame sprites live there.
 
 Core2 and CoreS3 sub-variants (AXP192 vs AXP2101 PMU, BMI270 vs MPU6886 IMU, RTC, touch) are all
 detected at runtime by M5Unified — they need no separate binary.
@@ -109,7 +116,7 @@ arduino-cli upload -p <port> `
 
 **Manual — esptool with explicit offsets:**
 
-ESP32 boards (`Basic_4MB`, `ESP32_16MB`) — bootloader at **0x1000**:
+ESP32 boards (`Basic_4MB`, `ESP32_16MB`, `WS_TouchLCD35`) — bootloader at **0x1000**:
 ```
 esptool --chip esp32 -p <port> write_flash `
   0x1000  M5_NightscoutMon.ino.bootloader.bin `
@@ -125,7 +132,7 @@ esptool --chip esp32s3 -p <port> write_flash `
   0x10000 M5_NightscoutMon.ino.bin
 ```
 
-After the first full flash, subsequent updates can go over-the-air (OTA) — all four partition
+After the first full flash, subsequent updates can go over-the-air (OTA) — all five partition
 schemes keep two app slots.
 
 **Browser — the `Flasher\` page (end users):**

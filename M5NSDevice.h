@@ -2,14 +2,17 @@
 #define _M5NSDEVICE_H
 
 // Single include point for the device layer. M5Stack boards go through M5Unified
-// (auto-detect Basic/Fire/Core2/CoreS3); non-M5 boards get a shim that exposes the
+// (auto-detect Basic/Fire/Core2/CoreS3); non-M5 boards (Guition JC3248W535, Waveshare
+// ESP32-Touch-LCD-3.5) get a shim that exposes the
 // same `M5` object surface (Lcd/Display/BtnA-C/Touch/Speaker/Power/begin/update),
 // so the sketch and the web-config code compile unchanged for every target.
 
 #include <SD.h>          // must precede M5GFX/M5Unified so the fs::FS (SD) image overloads are enabled
 
-#ifdef DEVICE_JC3248W535
+#if defined(DEVICE_JC3248W535)
   #include "hal_jc3248w535.h"
+#elif defined(DEVICE_WS_TOUCH_LCD_35)
+  #include "hal_ws_touchlcd35.h"
 #else
   #include <M5Unified.h>
   // SD wiring differs per device: M5 boards are handled by the variant's default CS,

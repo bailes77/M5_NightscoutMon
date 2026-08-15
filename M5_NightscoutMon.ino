@@ -31,6 +31,9 @@
     ArduinoJson by Benoit Blanchon (MIT)
     Adafruit NeoPixel (GNU LGPL v3)
     Arduino_GFX by moononournation (BSD 2-Clause) - JC3248W535 build only
+    hal_ws_touchlcd35.cpp/h (Waveshare ESP32-Touch-LCD-3.5 build only) carries the
+      ST7796 panel init list from LovyanGFX by lovyan03 (FreeBSD) and an ES8311 codec
+      setup condensed from Espressif's es8311 driver (Apache 2.0)
     The web flasher page (Flasher/) uses ESP Web Tools by ESPHome/Open Home
       Foundation (Apache 2.0), loaded from unpkg at run time.
     Additions to the code:
@@ -39,7 +42,8 @@
     Ben West (AP WiFi configuration)
     Dominik Dzienia (refactoring, migration to Platform.IO)
     Patrick Sonnerat and Claude (M5Unified migration, Dexcom Share and LibreLinkUp
-      data sources, web configuration, QR codes, JC3248W535 port, web flasher)
+      data sources, web configuration, QR codes, JC3248W535 and Waveshare
+      ESP32-Touch-LCD-3.5 ports, web flasher)
 */
 
 // Official M5Stack Arduino board definitions are required, please add board from following location:
@@ -50,7 +54,7 @@
 // M5Stack Arduino / M5Stack-Core2
 
 #include <Arduino.h>
-#include "M5NSDevice.h"  // SD.h + M5Unified, or the JC3248W535 shim (build with -DDEVICE_JC3248W535)
+#include "M5NSDevice.h"  // SD.h + M5Unified, or a non-M5 board shim (-DDEVICE_JC3248W535 / -DDEVICE_WS_TOUCH_LCD_35)
 #include <Preferences.h>
 #include <WiFi.h>
 #include <WiFiMulti.h>
