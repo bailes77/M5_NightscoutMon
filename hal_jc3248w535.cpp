@@ -212,6 +212,8 @@ bool halSDBegin() {
 // ---- M5 facade -----------------------------------------------------------------
 
 void JC_M5::begin(const JC_Config &cfg) {
+  Serial.begin(115200);       // M5Unified does this inside M5.begin(); the sketch relies on it
+
   // Touch I2C first: the sketch later calls Wire.begin() with no pins, which on
   // ESP32-S3 would default to SDA=8/SCL=9 and clobber the touch bus. A parameterless
   // begin() after this one is a no-op on core 2.x, so claiming the pins here wins.

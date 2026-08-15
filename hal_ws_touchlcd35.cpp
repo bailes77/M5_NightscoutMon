@@ -106,7 +106,10 @@ public:
       cfg.x_min = 0;  cfg.x_max = WS_PANEL_W - 1;
       cfg.y_min = 0;  cfg.y_max = WS_PANEL_H - 1;
       cfg.pin_int         = -1;        // polled
-      cfg.bus_shared      = true;
+      cfg.bus_shared      = false;     // touch is on I2C, the panel on SPI: NOT the same bus.
+                                       // (true made getTouch() close the panel's SPI transaction,
+                                       // which the compositor task on the other core owned ->
+                                       // xQueueGenericSend assert / reboot loop, first HW test)
       cfg.offset_rotation = 0;
       cfg.i2c_port = 0;                // LovyanGFX rides on Wire for I2C on Arduino-ESP32
       cfg.i2c_addr = WS_TOUCH_ADDR;
@@ -396,6 +399,8 @@ bool halSDBegin() {
 // ---- M5 facade ------------------------------------------------------------------------
 
 void WS_M5::begin(const WS_Config &cfg) {
+  Serial.begin(115200);       // M5Unified does this inside M5.begin(); the sketch relies on it
+
   // Everything I2C hangs off one bus; claim it first (the sketch's later bare
   // Wire.begin() is a no-op on core 2.x once the bus is up).
   Wire.begin(WS_I2C_SDA, WS_I2C_SCL, 400000);
