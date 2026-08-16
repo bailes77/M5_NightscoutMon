@@ -169,12 +169,13 @@ static void composeAndPush() {
   // UI sprite center lands on the landscape center; exact 1.5x maps 320x240 -> 480x320.
   M5.Lcd.pushRotateZoom(&s_comp, (WS_UI_W * WS_UI_ZOOM) / 2, (WS_UI_H * WS_UI_ZOOM) / 2,
                         0.0f, WS_UI_ZOOM, WS_UI_ZOOM);
-  // The panel shares VSPI with the SD card. The Arduino SD driver serialises its own
-  // accesses on the SPIClass transaction mutex, so taking that same mutex around the
-  // frame push keeps the core-1 compositor and main-thread SD reads off the bus at once.
-  SPI.beginTransaction(SPISettings(40000000, MSBFIRST, SPI_MODE0));
+  // The panel shares VSPI with the SD card. No extra guard needed: on Arduino-ESP32,
+  // LovyanGFX's startWrite()/endWrite() inside pushSprite() take the very same HAL
+  // spi->lock mutex the SD driver uses (spiSimpleTransaction), so the compositor and
+  // main-thread SD reads already serialise. Wrapping this in SPI.beginTransaction() -
+  // as the first prototype did - re-took that non-recursive mutex from the same task
+  // and deadlocked the compositor on frame 1 (blank display, first HW test).
   s_comp.pushSprite(&s_dev, 0, 0);
-  SPI.endTransaction();
 }
 
 static void compositorTask(void *) {
