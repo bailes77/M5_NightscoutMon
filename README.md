@@ -20,6 +20,7 @@
 [Battery](#battery)  
 [Installation and support](#installation-and-support)  
 [Firmware updates (OTA)](#firmware-updates-ota)  
+[This fork: Guition JC3248W535 notes](#this-fork-guition-jc3248w535-notes)  
 [License and credits](#license-and-credits)  
 [Donations - support the project](#donations) :+1:
 
@@ -228,6 +229,17 @@ Once your M5Stack is set up and connected to Wi-Fi, you don't need a computer to
 Firmware is served directly from this GitHub repository — the [`Binaries/`](Binaries) folder on `master` — over HTTPS; there is no separate update server. The device automatically requests the binary matching its own board (`Basic_4MB`, `ESP32_16MB` or `CoreS3`, see [`Scripts/README.md`](Scripts/README.md#the-three-firmwares)), so a Basic, Fire, Core2 or CoreS3 all get the correct image without any manual selection.
 
 If you maintain your own fork, see [`Scripts/README.md`](Scripts/README.md#publishing-an-ota-update) for how to build and publish updates for it.
+
+### This fork: Guition JC3248W535 notes
+
+This fork (branch `jc3248w535-fixes`) extends the upstream Guition JC3248W535 3.5" port with fixes worked out on a JC3248W535**C** (capacitive touch) unit whose hardware batch differs from the one the original port was written against:
+
+* **180° display rotation and full-screen UI** — the 320x240 UI now fills the whole 480x320 panel (1.5x wide / 1.33x tall). The uniform 1.5x scaling used before pushed the bottom 27 UI rows — the touch button bar and its icons — off the panel. Rotation is selected with `JC_COMP_ROT` in `hal_jc3248w535.cpp`.
+* **Touch fixes for newer hardware batches** — some units ship with the AXS15231B touch controller that (a) only answers I2C at **100 kHz** (it NAKs at the original 400 kHz), (b) needs a bus re-init and a bare address probe after panel init before it responds at all, and (c) is mounted/configured **180° rotated** relative to the original port's assumption. All three are handled; the orientation is a one-line knob (`JC_TOUCH_FLIP180` in `hal_jc3248w535.cpp`) if your batch differs.
+* **Alert tones matching the M5Stack sound** — the I2S tone synth generates square waves (like M5Unified's speaker) instead of sine, so alarms have the familiar timbre and volume. Alarm/warning volume stays configurable (`alarm_volume` / `warning_volume` in `M5NS.INI` or on the web page).
+* **Remote config backup** — the device web page can save the running configuration to `M5NS.INI` on the SD card and **download or upload** that file over HTTP, so the config can be backed up and restored without opening the enclosure.
+
+**3D printed case:** this build fits the [Standalone Case JC3248W535C by so99hero](https://www.thingiverse.com/thing:7127557) on Thingiverse.
 
 ### License and credits
 
