@@ -21,7 +21,7 @@ static Arduino_AXS15231B s_panel(&s_bus, GFX_NOT_DEFINED /*no reset pin*/, 0 /*r
 
 // Landscape direction relative to the USB-C port: 1 or 3. If the picture comes up
 // upside-down at bring-up, flip this - the touch mapping follows it automatically.
-#define JC_COMP_ROT 1
+#define JC_COMP_ROT 3
 
 // Full-frame composition buffer in panel-native portrait orientation. Its logical
 // rotation presents it as 480x320 landscape, so the compose below is rotation-free.
@@ -30,9 +30,9 @@ static SemaphoreHandle_t s_gfxMutex = nullptr;
 static volatile bool s_displayReady = false;
 
 static void composeAndPush() {
-  // UI sprite center lands on the landscape center; exact 1.5x maps 320x240 -> 480x320.
-  M5.Lcd.pushRotateZoom(&s_comp, (JC_UI_W * JC_UI_ZOOM) / 2, (JC_UI_H * JC_UI_ZOOM) / 2,
-                        0.0f, JC_UI_ZOOM, JC_UI_ZOOM);
+  // UI sprite center lands on the landscape center; 1.5x wide / 1.333x tall fills 480x320.
+  M5.Lcd.pushRotateZoom(&s_comp, (JC_UI_W * JC_UI_ZOOM_X) / 2, (JC_UI_H * JC_UI_ZOOM_Y) / 2,
+                        0.0f, JC_UI_ZOOM_X, JC_UI_ZOOM_Y);
   // LovyanGFX 16-bit sprite buffers hold panel-order (big-endian) rgb565, hence the
   // "Be" variant. If colors ever come out wrong, the fix is draw16bitRGBBitmap.
   s_panel.draw16bitBeRGBBitmap(0, 0, (uint16_t *)s_comp.getBuffer(), JC_PANEL_W, JC_PANEL_H);
@@ -91,8 +91,8 @@ static void touchToUI(uint16_t nx, uint16_t ny, int16_t &ux, int16_t &uy) {
   lx = ny;
   ly = (JC_PANEL_W - 1) - nx;
 #endif
-  ux = (int16_t)(lx / JC_UI_ZOOM);
-  uy = (int16_t)(ly / JC_UI_ZOOM);
+  ux = (int16_t)(lx / JC_UI_ZOOM_X);
+  uy = (int16_t)(ly / JC_UI_ZOOM_Y);
   uint_fast8_t r = M5.Lcd.getRotation();
   if (r & 2) { ux = (JC_UI_W - 1) - ux; uy = (JC_UI_H - 1) - uy; }   // 180
   if (r & 4) { ux = (JC_UI_W - 1) - ux; }                             // mirrored

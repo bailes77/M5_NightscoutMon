@@ -41,12 +41,16 @@
 #define JC_I2S_BCLK       42
 #define JC_I2S_DOUT       41
 
-// Panel native size (portrait) and the sketch's UI size. 480x320 = exactly 1.5 * 320x240.
+// Panel native size (portrait) and the sketch's UI size. Landscape 480x320 vs the
+// 320x240 UI: width is an exact 1.5x, but height only has 320/240 = 1.333x available,
+// so the UI is stretched anisotropically to fill the panel (a uniform 1.5x would push
+// the bottom 27 UI rows - the button bar - off the panel).
 #define JC_PANEL_W       320
 #define JC_PANEL_H       480
 #define JC_UI_W          320
 #define JC_UI_H          240
-#define JC_UI_ZOOM      1.5f
+#define JC_UI_ZOOM_X    1.5f
+#define JC_UI_ZOOM_Y    ((float)JC_PANEL_W / JC_UI_H)
 
 #define JC_BL_LEDC_CHANNEL 7   // S3 has LEDC channels 0-7; sketch's vibration uses 14 (no-op on S3)
 
