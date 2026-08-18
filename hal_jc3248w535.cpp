@@ -23,6 +23,11 @@ static Arduino_AXS15231B s_panel(&s_bus, GFX_NOT_DEFINED /*no reset pin*/, 0 /*r
 // upside-down at bring-up, flip this - the touch mapping follows it automatically.
 #define JC_COMP_ROT 3
 
+// Some panel batches mount/configure the AXS15231B touch sensor 180 deg from the
+// orientation the original port assumed (this unit does - calibrated from raw touch
+// dumps). Set to 1 if touch lands point-mirrored relative to the display.
+#define JC_TOUCH_FLIP180 1
+
 // Full-frame composition buffer in panel-native portrait orientation. Its logical
 // rotation presents it as 480x320 landscape, so the compose below is rotation-free.
 static lgfx::LGFX_Sprite s_comp;
@@ -91,6 +96,10 @@ static void touchToUI(uint16_t nx, uint16_t ny, int16_t &ux, int16_t &uy) {
   lx = ny;
   ly = (JC_PANEL_W - 1) - nx;
 #endif
+#if JC_TOUCH_FLIP180
+  lx = (JC_PANEL_H - 1) - lx;
+  ly = (JC_PANEL_W - 1) - ly;
+#endif
   ux = (int16_t)(lx / JC_UI_ZOOM_X);
   uy = (int16_t)(ly / JC_UI_ZOOM_Y);
   uint_fast8_t r = M5.Lcd.getRotation();
@@ -132,10 +141,11 @@ static void speakerTask(void *) {
       }
       float step = 2.0f * PI * (float)s_toneFreq / (float)JC_I2S_RATE;
       // NS4168 is known to run quiet on this board (missing pull-up on U4) - use the
-      // full int16 range at max volume rather than headroom.
+      // full int16 range at max volume rather than headroom. Square wave to match
+      // M5Unified's Speaker.tone() timbre (a sine reads much softer at equal volume).
       int32_t amp = (int32_t)s_volume * 128;
       for (int i = 0; i < JC_TONE_CHUNK; ++i) {
-        buf[i] = (int16_t)(sinf(phase) * amp);
+        buf[i] = (phase < PI) ? (int16_t)amp : (int16_t)(-amp);
         phase += step;
         if (phase > 2.0f * PI) phase -= 2.0f * PI;
       }
@@ -217,7 +227,9 @@ void JC_M5::begin(const JC_Config &cfg) {
   // Touch I2C first: the sketch later calls Wire.begin() with no pins, which on
   // ESP32-S3 would default to SDA=8/SCL=9 and clobber the touch bus. A parameterless
   // begin() after this one is a no-op on core 2.x, so claiming the pins here wins.
-  Wire.begin(JC_TOUCH_SDA, JC_TOUCH_SCL, 400000);
+  // 100 kHz: this batch's AXS15231B touch NAKs at 400 kHz (confirmed by scan - it
+  // only ACKs at 100 kHz). A poll is ~19 bytes, so 100 kHz still costs only ~2 ms.
+  Wire.begin(JC_TOUCH_SDA, JC_TOUCH_SCL, 100000);
 
   if (!s_panel.begin(40000000L)) {
     Serial.println("JC3248W535: panel init FAILED");
