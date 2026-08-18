@@ -236,6 +236,25 @@ void JC_M5::begin(const JC_Config &cfg) {
   }
   s_panel.fillScreen(BLACK);
 
+  // Bring up the AXS15231B touch controller: on this batch it needs all of this,
+  // reproduced from the (accidentally working) debug bus-scan sequence -
+  //  1. the panel must be initialized first (its I2C engine is down before that),
+  //  2. the I2C bus must be re-initialized after panel init,
+  //  3. it only starts answering after it has ACKed a bare address probe.
+  {
+    delay(200);
+    Wire.end();
+    Wire.begin(JC_TOUCH_SDA, JC_TOUCH_SCL, 100000);
+    delay(50);
+    bool touchUp = false;
+    for (int i = 0; i < 10 && !touchUp; ++i) {
+      Wire.beginTransmission(JC_TOUCH_ADDR);
+      touchUp = (Wire.endTransmission() == 0);
+      if (!touchUp) delay(50);
+    }
+    if (!touchUp) Serial.println("JC3248W535: touch controller not responding");
+  }
+
   ledcSetup(JC_BL_LEDC_CHANNEL, 5000, 8);
   ledcAttachPin(JC_LCD_BL, JC_BL_LEDC_CHANNEL);
   ledcWrite(JC_BL_LEDC_CHANNEL, 255);
