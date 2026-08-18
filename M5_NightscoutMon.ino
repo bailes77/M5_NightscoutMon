@@ -2555,6 +2555,8 @@ void setup() {
       w3srv.on("/fwcheck", handleFwCheck);
       w3srv.on("/update", handleUpdate);
       w3srv.on("/savecfg", handleSaveConfig);
+      w3srv.on("/downloadcfg", handleDownloadConfig);
+      w3srv.on("/uploadcfg", HTTP_POST, handleUploadConfig, handleUploadConfigFile);
       w3srv.on("/switch", handleSwitchConfig);
       w3srv.on("/edititem", handleEditConfigItem);
       w3srv.on("/getedititem", handleGetEditConfigItem);

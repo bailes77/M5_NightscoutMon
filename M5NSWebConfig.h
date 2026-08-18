@@ -20,6 +20,9 @@ void handleSwitchConfig();
 void handleEditConfigItem();
 void handleGetEditConfigItem();
 void handleSaveConfig();
+void handleDownloadConfig();
+void handleUploadConfig();
+void handleUploadConfigFile();
 void handleClearConfigFlash();
 void handleNotFound();
 

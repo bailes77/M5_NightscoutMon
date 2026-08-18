@@ -174,6 +174,10 @@ void handleRoot() {
   pageHeadOpen(message, NULL);
 
   message += "<a class=\"btn\" href=\"/savecfg\">Save configuration to M5NS.INI</a>\r\n";
+  message += "<a class=\"btn\" href=\"/downloadcfg\">Download M5NS.INI</a>\r\n";
+  message += "<form method=\"POST\" action=\"/uploadcfg\" enctype=\"multipart/form-data\">"
+             "<input type=\"file\" name=\"cfg\" accept=\".ini,.INI,.bak,.BAK\"> "
+             "<input type=\"submit\" value=\"Upload M5NS.INI\"></form>\r\n";
   if (restartPending) {
     message += "<p class=\"warn\">Changes pending that need a restart - the device will restart automatically when you save.</p>\r\n";
   }
@@ -1328,6 +1332,96 @@ static void persistConfigToDisk() {
   }
 
   saveConfigToFlash(&cfg);
+}
+
+// Streams the SD card's M5NS.INI over HTTP so the configuration can be backed up
+// without opening the enclosure - pair with /savecfg, which writes the current
+// in-RAM config to that file first.
+void handleDownloadConfig() {
+  File f = SD.open("/M5NS.INI", FILE_READ);
+  if (!f || f.size() == 0) {
+    if (f) f.close();
+    String message;
+    message.reserve(512);
+    pageHeadOpen(message, "<meta http-equiv=\"refresh\" content=\"4;url=/\" />\r\n");
+    message += "<p>M5NS.INI not found on the SD card (or no card inserted).</p>\r\n";
+    message += "<p>Use <b>Save configuration to M5NS.INI</b> first, then download again.</p>\r\n";
+    message += "</body>\r\n";
+    message += "</html>\r\n";
+    w3srv.send(404, "text/html", message);
+    return;
+  }
+  w3srv.sendHeader("Content-Disposition", "attachment; filename=M5NS.INI");
+  w3srv.streamFile(f, "text/plain");
+  f.close();
+}
+
+// Accepts an uploaded M5NS.INI (multipart POST to /uploadcfg): the file streams to
+// M5NS.TMP on the SD card, is sanity-checked for a [config] section, the current
+// M5NS.INI is kept as M5NS.BAK, and the device restarts so the new config loads.
+static File s_cfgUpload;
+static bool s_cfgUploadFailed = false;
+
+void handleUploadConfigFile() {
+  HTTPUpload& up = w3srv.upload();
+  if (up.status == UPLOAD_FILE_START) {
+    s_cfgUploadFailed = false;
+    SD.remove("/M5NS.TMP");
+    s_cfgUpload = SD.open("/M5NS.TMP", FILE_WRITE);
+    if (!s_cfgUpload) s_cfgUploadFailed = true;
+  } else if (up.status == UPLOAD_FILE_WRITE) {
+    if (!s_cfgUpload || s_cfgUpload.write(up.buf, up.currentSize) != up.currentSize)
+      s_cfgUploadFailed = true;
+  } else if (up.status == UPLOAD_FILE_END) {
+    if (s_cfgUpload) s_cfgUpload.close();
+  } else if (up.status == UPLOAD_FILE_ABORTED) {
+    if (s_cfgUpload) s_cfgUpload.close();
+    SD.remove("/M5NS.TMP");
+    s_cfgUploadFailed = true;
+  }
+}
+
+void handleUploadConfig() {
+  bool ok = !s_cfgUploadFailed;
+  if (ok) {
+    // Require a [config] section so an accidental wrong file can't replace the config.
+    File f = SD.open("/M5NS.TMP", FILE_READ);
+    ok = f && f.size() > 0;
+    if (ok) {
+      String head;
+      head.reserve(4096);
+      while (f.available() && head.length() < 4096) head += (char)f.read();
+      head.toLowerCase();
+      ok = head.indexOf("[config]") >= 0;
+    }
+    if (f) f.close();
+  }
+
+  String message;
+  message.reserve(512);
+  if (ok) {
+    SD.remove("/M5NS.BAK");
+    SD.rename("/M5NS.INI", "/M5NS.BAK");
+    ok = SD.rename("/M5NS.TMP", "/M5NS.INI");
+  }
+  if (ok) {
+    pageHeadOpen(message, "<meta http-equiv=\"refresh\" content=\"10;url=/\" />\r\n");
+    message += "<p>New M5NS.INI installed (previous kept as M5NS.BAK).</p>\r\n";
+    message += "<p><b>Restarting to apply the uploaded configuration...</b></p>\r\n";
+    message += "</body>\r\n";
+    message += "</html>\r\n";
+    w3srv.send(200, "text/html", message);
+    delay(1000);
+    ESP.restart();
+  } else {
+    SD.remove("/M5NS.TMP");
+    pageHeadOpen(message, "<meta http-equiv=\"refresh\" content=\"4;url=/\" />\r\n");
+    message += "<p>Upload rejected: not a valid M5NS.INI (missing [config] section), empty file, or SD card problem.</p>\r\n";
+    message += "<p>The current configuration is unchanged.</p>\r\n";
+    message += "</body>\r\n";
+    message += "</html>\r\n";
+    w3srv.send(400, "text/html", message);
+  }
 }
 
 void handleSaveConfig() {
